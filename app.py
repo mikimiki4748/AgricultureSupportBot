@@ -60,15 +60,7 @@ parser = WebhookParser(channel_secret)
 
 @app.route('/tmp/<path:filename>')
 def image(filename):
-    try:
-        im = Image.open("/tmp/"+filename)
-        #im.thumbnail((w, h), Image.ANTIALIAS)
-        io = StringIO.StringIO()
-        im.save(io, format='PNG')
-        return Response(io.getvalue(), mimetype='image/jpeg')
-    except IOError:
-        abort(404)
-
+    
     return send_from_directory('/tmp', filename)
 
 @app.route("/callback", methods=['POST'])
