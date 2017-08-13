@@ -18,7 +18,7 @@ import os
 import sys
 from argparse import ArgumentParser
 
-from flask import Flask, request, abort
+from flask import Flask, request, abort, send_from_directory
 from linebot import (
     LineBotApi, WebhookParser
 )
@@ -38,6 +38,8 @@ from work.temperature import temp
 from work.humidity import humi
 from work.visual import test
 from get_web_envdata import getEnvData
+import image
+from io import StringIO
 
 app = Flask(__name__)
 
@@ -56,6 +58,18 @@ if channel_access_token is None:
 line_bot_api = LineBotApi(channel_access_token)
 parser = WebhookParser(channel_secret)
 
+@app.route('/tmp/<path:filename>')
+def image(filename):
+    try:
+        im = Image.open("/tmp/"+filename)
+        #im.thumbnail((w, h), Image.ANTIALIAS)
+        io = StringIO.StringIO()
+        im.save(io, format='PNG')
+        return Response(io.getvalue(), mimetype='image/jpeg')
+    except IOError:
+        abort(404)
+
+    return send_from_directory('/tmp', filename)
 
 @app.route("/callback", methods=['POST'])
 def callback():
