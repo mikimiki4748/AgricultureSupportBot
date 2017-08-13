@@ -58,17 +58,10 @@ if channel_access_token is None:
 line_bot_api = LineBotApi(channel_access_token)
 parser = WebhookParser(channel_secret)
 
-
-@app.route('/tmp/temp/<path:filename>')
+@app.route('/tmp/<path:filename>')
 def image(filename):
     
-    return send_from_directory('.tmp/temp', filename)
-
-
-@app.route('tmp/humi/<path:filename>')
-def image(filename):
-    
-    return send_from_directory('.tmp/humi', filename)
+    return send_from_directory('tmp', filename)
 
 @app.route("/callback", methods=['POST'])
 def callback():
