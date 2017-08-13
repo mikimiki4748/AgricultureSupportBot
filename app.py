@@ -62,13 +62,13 @@ parser = WebhookParser(channel_secret)
 @app.route('/tmp/temp/<path:filename>')
 def image(filename):
     
-    return send_from_directory('tmp/temp', filename)
+    return send_from_directory('.tmp/temp', filename)
 
 
-@app.route('/tmp/humi/<path:filename>')
+@app.route('tmp/humi/<path:filename>')
 def image(filename):
     
-    return send_from_directory('tmp/humi', filename)
+    return send_from_directory('.tmp/humi', filename)
 
 @app.route("/callback", methods=['POST'])
 def callback():
