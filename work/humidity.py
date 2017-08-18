@@ -50,7 +50,7 @@ def humi(s, e):
     plt.ylabel("Humidity")
     #plt.show()
 
-    file_name = "tmp/humidity.png"
+    file_name = "img/humidity.png"
     plt.savefig(file_name)
 
     #subprocess.call('rm -rf ' + filename, shell=True)

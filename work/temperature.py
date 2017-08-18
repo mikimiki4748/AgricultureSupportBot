@@ -52,7 +52,7 @@ def temp(s, e):
     plt.xlabel("Date")
     plt.ylabel("Air Temperature")
     #plt.show()
-    file_name  = "tmp/air_temperature.png"
+    file_name  = "img/air_temperature.png"
     plt.savefig(file_name)
     print('saved as: '+file_name)
     return file_name
