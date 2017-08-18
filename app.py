@@ -113,7 +113,7 @@ def callback():
             #画像送信
             try:
                 print(host_name+file_name)
-                post_image(event.reply_token, host_name+'/'+file_name)
+                post_image(event.reply_token, host_name+file_name)
             except Exception as e:
                 print(e)
         
