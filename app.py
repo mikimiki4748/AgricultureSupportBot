@@ -46,7 +46,8 @@ app = Flask(__name__)
 # get channel_secret and channel_access_token from your environment variable
 channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
 channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', None)
-host_name = 'https://nameless-gorge-55138.herokuapp.com'
+#host_name = 'https://nameless-gorge-55138.herokuapp.com'
+host_name = 'https://3be2bdd2.ngrok.io'
 
 if channel_secret is None:
     print('Specify LINE_CHANNEL_SECRET as environment variable.')
@@ -58,10 +59,16 @@ if channel_access_token is None:
 line_bot_api = LineBotApi(channel_access_token)
 parser = WebhookParser(channel_secret)
 
+
 @app.route('/img/<path:filename>')
 def image(filename):
-    
     return send_from_directory('img', filename)
+
+
+@app.route('/tmp/<path:filename>')
+def csv(filename):  
+    return send_from_directory('tmp', filename)
+
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -91,7 +98,7 @@ def callback():
             #現在から7日前までの時間
             dt_tday = datetime.now()
             dt_week_ago = dt_tday - timedelta(days=6)
-            str_tday     = dt_tday.strftime('%Y-%m-%d')
+            str_tday = dt_tday.strftime('%Y-%m-%d')
             str_week_ago = dt_week_ago.strftime('%Y-%m-%d')
             #画像生成
             file_name = temp(str_week_ago, str_tday)
@@ -102,21 +109,22 @@ def callback():
             except Exception as e:
                 print(e)
         elif re.search('湿度', received_text):
-            getEnvData()#データダウンロード
-            #現在から7日前までの時間
+            getEnvData()
             dt_tday = datetime.now()
             dt_week_ago = dt_tday - timedelta(days=6)
-            str_tday     = dt_tday.strftime('%Y-%m-%d')
+            str_tday = dt_tday.strftime('%Y-%m-%d')
             str_week_ago = dt_week_ago.strftime('%Y-%m-%d')
-            #画像生成
             file_name = humi(str_week_ago, str_tday)
-            #画像送信
             try:
                 print(host_name+file_name)
                 post_image(event.reply_token, host_name+'/'+file_name)
             except Exception as e:
                 print(e)
-        
+        elif re.search('csv', received_text):
+            try:
+                post_text(event.reply_token, host_name+'/tmp/data.csv')
+            except Exception as e:
+                print(e)
         else:
             post_text(event.reply_token, received_text)
     
