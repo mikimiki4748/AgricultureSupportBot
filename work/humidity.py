@@ -49,8 +49,9 @@ def humi(s, e):
     plt.xlabel("Date")
     plt.ylabel("Humidity")
     #plt.show()
-
-    file_name = "img/humidity.png"
+    dt = datetime.now()
+    date_format = '%Y%m%d%H%M%S'
+    file_name  = "img/"+datetime.strftime(dt,date_format)+"humidity.png"
     plt.savefig(file_name)
 
     #subprocess.call('rm -rf ' + filename, shell=True)
