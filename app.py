@@ -61,7 +61,7 @@ parser = WebhookParser(channel_secret)
 @app.route('/img/<path:filename>')
 def image(filename):
     
-    return send_from_directory('tmp', filename)
+    return send_from_directory('img', filename)
 
 @app.route("/callback", methods=['POST'])
 def callback():
@@ -113,7 +113,7 @@ def callback():
             #画像送信
             try:
                 print(host_name+file_name)
-                post_image(event.reply_token, host_name+file_name)
+                post_image(event.reply_token, host_name+'/'+file_name)
             except Exception as e:
                 print(e)
         
