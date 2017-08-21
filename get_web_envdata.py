@@ -45,7 +45,7 @@ def getEnvData():
         if index != len(attr_list)-1:
             keys += ','
     keys += ']'
-    print(keys)
+    #print(keys)
     #keys = '[\"nodeID\",\"time\",\"air_temperature\"]'
     #現在から6日前までの時間
     tday = datetime.now()

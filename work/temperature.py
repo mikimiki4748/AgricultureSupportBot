@@ -12,8 +12,6 @@ import datetime
 
 
 def get_data(date):
-    #data = pd.read_csv("work/data.csv")#サンプルデータ
-    print(date)
     data = pd.read_csv("tmp/data.csv")
     d = data[data["time"].str.contains(date)]
     d = d[['time', 'air_temperature']]
@@ -23,6 +21,7 @@ def get_data(date):
     return d    #d = time and air_temperature
 
 def temp(s, e):
+    plt.figure()#reset graph  
     date_format = '%Y-%m-%d'
     start = datetime.datetime.strptime(s, date_format)
     end = datetime.datetime.strptime(e, date_format)
@@ -36,7 +35,6 @@ def temp(s, e):
         day.append(date_output)
         df.append(get_data(day[i]))
         start += datetime.timedelta(days = 1)
-    
     plt.rcParams["font.size"] = 8
 
     for i in range((temp_e - temp_s).days + 1):
@@ -56,10 +54,4 @@ def temp(s, e):
     date_format = '%Y%m%d%H%M%S'
     file_name  = "img/"+datetime.datetime.strftime(dt,date_format)+"air_temperature.png"
     plt.savefig(file_name)
-    print('saved as: '+file_name)
     return file_name
-    #確認
-    #import os
-    #print('file_nameで確認')
-    #print(os.path.exists(file_name))
-

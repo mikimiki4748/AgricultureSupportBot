@@ -19,6 +19,7 @@ def get_data(date):
     return d    #d = time and relative_humidity
 
 def humi(s, e):
+    plt.figure()#reset graph  
     date_format = '%Y-%m-%d'
     start = datetime.datetime.strptime(s, date_format)
     end = datetime.datetime.strptime(e, date_format)

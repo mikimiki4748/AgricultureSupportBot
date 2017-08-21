@@ -47,7 +47,7 @@ app = Flask(__name__)
 channel_secret = os.getenv('LINE_CHANNEL_SECRET', None)
 channel_access_token = os.getenv('LINE_CHANNEL_ACCESS_TOKEN', None)
 host_name = 'https://nameless-gorge-55138.herokuapp.com'
-#host_name = 'https://3be2bdd2.ngrok.io'
+#host_name = 'https://47240bc3.ngrok.io'
 
 if channel_secret is None:
     print('Specify LINE_CHANNEL_SECRET as environment variable.')
@@ -104,7 +104,6 @@ def callback():
             file_name = temp(str_week_ago, str_tday)
             #画像送信
             try:
-                print(host_name+file_name)
                 post_image(event.reply_token, host_name+'/'+file_name)
             except Exception as e:
                 print(e)
@@ -116,7 +115,6 @@ def callback():
             str_week_ago = dt_week_ago.strftime('%Y-%m-%d')
             file_name = humi(str_week_ago, str_tday)
             try:
-                print(host_name+file_name)
                 post_image(event.reply_token, host_name+'/'+file_name)
             except Exception as e:
                 print(e)
