@@ -24,9 +24,9 @@ def getToken():
       html = res.read().decode("utf-8")
 #   print(html)
    dict_response = json.loads(html)
-#   print(dict_response['Expire'])#有効期限
-#   print(dict_response['Response'])#Success or Failded
-#   print(dict_response['Token'])#トークン
+   print('有効期限: ',dict_response['Expire'])
+   print('結果: ',dict_response['Response'])
+   print('Token: ',dict_response['Token'])
    return dict_response['Token'] #トークン
    
 
@@ -120,5 +120,6 @@ def getEnvData():
 
 
 if __name__ == '__main__' :
-    getEnvData()
+    #getEnvData()
+    getToken()
 
