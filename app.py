@@ -29,12 +29,12 @@ app = Flask(__name__)
 def chart():
     dt_tday = datetime.now()
     labels = [(dt_tday - timedelta(days=i)).strftime('%Y-%m-%d')
-        for i in range(6,0,-1)]
+        for i in range(6,-1,-1)]
     #values = get_weekly_temp()
     values = [10,9,8,7,6,4,7,8]
     return render_template('chart.html', values=values, labels=labels)
 
-@app.route("update")
+@app.route("/update")
 def update_db():
     update_env_data()
 
