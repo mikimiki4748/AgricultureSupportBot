@@ -6,6 +6,7 @@ import sys
 import time
 import re
 import image
+import redis
 from argparse import ArgumentParser
 from datetime import datetime
 from datetime import timedelta
@@ -16,6 +17,7 @@ from flask import request
 from flask import abort
 from flask import render_template
 from flask import send_from_directory
+
 from work.temperature import temp
 from work.humidity import humi
 from work.visual import test
@@ -23,10 +25,23 @@ from get_web_envdata import getEnvData
 from src.db_handler import get_weekly_temp
 from src.db_handler import update_env_data
 
+
 app = Flask(__name__)
+
+# 接続パス、環境変数にあればそれ優先
+REDIS_URL = os.environ.get('REDIS_URL') if os.environ.get(
+    'REDIS_URL') != None else 'redis://localhost:6379'
+# データベースの指定
+DATABASE_INDEX = 1  # 0じゃなくあえて1
+# コネクションプールから１つ取得
+pool = redis.ConnectionPool.from_url(REDIS_URL, db=DATABASE_INDEX)
+# コネクションを利用
+r = redis.StrictRedis(connection_pool=pool)
+
 
 @app.route("/")
 def chart():
+    print(getEnvData())
     dt_tday = datetime.now()
     labels = [(dt_tday - timedelta(days=i)).strftime('%Y-%m-%d')
         for i in range(6,-1,-1)]

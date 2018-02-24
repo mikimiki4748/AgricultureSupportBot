@@ -1,4 +1,8 @@
 # -*- coding: utf-8 -*-
+from flask.ext.sqlalchemy import SQLAlchemy
+from flask import Flask, render_template, request
+import os
+
 
 def update_env_data():
     print("update db")
