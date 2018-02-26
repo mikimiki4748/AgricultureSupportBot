@@ -15,68 +15,103 @@
 <canvas id="chart" width="600" height="400"></canvas>
  
 <script>
- 
-   // bar chart data
-   var barData = {
-   labels : [{% for item in labels %}
-                  "{{item}}",
-              {% endfor %}],
-   datasets : [
-      {
-            fillColor: "rgba(151,187,205,0.2)",
-            strokeColor: "rgba(151,187,205,1)",
-            pointColor: "rgba(151,187,205,1)",
-            pointStrokeColor: "#fff",
-            pointHighlightFill: "#fff",
-            pointHighlightStroke: "rgba(151,187,205,1)",
-            bezierCurve : false,
-            data : [{% for item in values %}
-                      {{item}},
-                    {% endfor %}]
-      }]
-   }
+    // bar chart data
+    var barData = {
+        labels : [{% for item in labels %}
+            "{{item}}", {% endfor %}],
+        datasets : [
+            {
+                //凡例
+                label: "平均気温",
+                //面の表示
+                fill: false,
+                //線のカーブ
+                lineTension: 0,
+                //枠線の色
+                borderColor: "rgba(255, 255, 0, 1)",
+                //結合点の枠線の色
+                pointBorderColor: "rgba(255, 255, 0, 1)",
+                //結合点の背景色
+                pointBackgroundColor: "rgba(255, 255, 0, 1)",
+                //結合点のサイズ
+                pointRadius: 5,
+                //結合点のサイズ（ホバーしたとき）
+                pointHoverRadius: 8,
+                //結合点の背景色（ホバーしたとき）
+                pointHoverBackgroundColor: "rgba(200, 200, 0, 1)",
+                //結合点の枠線の色（ホバーしたとき）
+                pointHoverBorderColor: "rgba(200, 200, 0, 1)",
+                //結合点より外でマウスホバーを認識する範囲（ピクセル単位）
+                pointHitRadius: 15,
+                bezierCurve : false,
+                data : [{% for item in dataset_ave %}
+                        {{item}},
+                        {% endfor %}],
+            },{
+                label: "最高気温",
+                fill: false,
+                lineTension: 0,
+                borderColor: "rgba(255,0,0,1)",
+                pointBorderColor: "rgba(255,0,0,1)",
+                pointBackgroundColor: "rgba(255,0,0,1)",
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: "rgba(255,0,0,1)",
+                pointHoverBorderColor: "rgba(255,0,0,1)",
+                pointHitRadius: 15,
+                bezierCurve : false,
+                data : [{% for item in dataset_max %}
+                        {{item}},
+                        {% endfor %}],
+            },{
+                label: "最低気温",
+                fill: false,
+                lineTension: 0,
+                borderColor: "rgba(0,0,255,1)",
+                pointBorderColor: "rgba(0,0,255,1)",
+                pointBackgroundColor: "rgba(0,0,255,1)",
+                pointRadius: 5,
+                pointHoverRadius: 8,
+                pointHoverBackgroundColor: "rgba(0,0,255,1)",
+                pointHoverBorderColor: "rgba(0,0,255,1)",
+                pointHitRadius: 15,
+                bezierCurve : false,
+                data : [{% for item in dataset_min %}
+                        {{item}},
+                        {% endfor %}],
+            }
+        ]
+    }
  
     Chart.defaults.global.animationSteps = 50;
     Chart.defaults.global.tooltipYPadding = 16;
     Chart.defaults.global.tooltipCornerRadius = 0;
     Chart.defaults.global.tooltipTitleFontStyle = "normal";
-    Chart.defaults.global.tooltipFillColor = "rgba(0,0,0,0.8)";
     Chart.defaults.global.animationEasing = "easeOutBounce";
     Chart.defaults.global.responsive = false;
     Chart.defaults.global.scaleLineColor = "black";
     Chart.defaults.global.scaleFontSize = 16;
  
-   // get bar chart canvas
-   var mychart = document.getElementById("chart").getContext("2d");
- 
-   steps = 10
-   max = 10
-   // draw bar chart
-  /* var LineChartDemo = new Chart(mychart).Line(barData, {
-        scaleOverride: true,
-        scaleSteps: steps,
-        scaleStepWidth: Math.ceil(max / steps),
-        scaleStartValue: 0,
-        scaleShowVerticalLines: true,
-        scaleShowGridLines : true,
-        barShowStroke : true,
-        scaleShowLabels: true,
-        bezierCurve: false,
-   });
-  */ 
-  var myLineChart = new Chart(mychart, {
-    type: 'line',
-    data: barData,
-    options: {
-        showLines: true,
-        elements: {
-            line: {
-                tension: 0, // disables bezier curves
-            }
+    // get bar chart canvas
+    var mychart = document.getElementById("chart").getContext("2d");
+    var myLineChart = new Chart(mychart, {
+        type: 'line',
+        data: barData,
+        options: {
+            showLines: true,
+            scales: {
+                yAxes: [
+                  {
+                    ticks: {
+                      beginAtZero: true,
+                      min: -20,
+                      max: 50
+                    }
+                  }
+                ]
+              }
         }
-    }
-  });
- 
+    });
 </script>
  
 </body>

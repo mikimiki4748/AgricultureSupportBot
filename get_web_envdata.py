@@ -31,7 +31,7 @@ def getToken():
    return dict_response['Token'] #トークン
    
 
-def getEnvData():
+def getEnvData(data_days=6):
     reference_token = getToken()
     #石井のIDは 45324459
     #阿南高専のIDは 45327972
@@ -50,7 +50,6 @@ def getEnvData():
     '''
     keys = '[\"nodeID\",\"time\",\"air_temperature\"]'
     #現在から6日前までの時間
-    data_days = 3
     tday = datetime.now()
     week_ago = tday - timedelta(days=data_days)
     epc_y = int(time.mktime(week_ago.timetuple()))*1000
@@ -84,14 +83,13 @@ def getEnvData():
     date_format = '%Y-%m-%d'
 
     ave_temp  = [0 for i in range(data_days+2)]
-    high_temp = [0 for i in range(data_days+2)]
-    low_temp  = [0 for i in range(data_days+2)]
+    high_temp = [-100 for i in range(data_days+2)]
+    low_temp  = [ 100 for i in range(data_days+2)]
     temp_num = 0
     temp_index = 0
     pre_date = datetime.strftime(datetime.strptime(dict(env_list[0]).get('time', None), api_format) + timedelta(hours = 9), date_format)
     for data_json in env_list:
         data_dict = dict(data_json)
-
         str_time = data_dict.get('time', None)
     #    if(str_time is None):
     #        continue
@@ -108,26 +106,38 @@ def getEnvData():
             temp_num += 1
             ave_temp[temp_index] += air_temperature
             print(air_temperature)
+            if high_temp[temp_index] < air_temperature:
+                high_temp[temp_index] = air_temperature
+            if low_temp[temp_index] > air_temperature:
+                low_temp[temp_index] = air_temperature
         else:
-            print("合計値:", ave_temp[temp_index])
-            print("データ数:", temp_num)
-            ave_temp[temp_index] /= float(temp_num)
+            #TODO:同じ処理を書いている.関数化orクラス化.
+            #print("合計値:", ave_temp[temp_index])
+            #print("データ数:", temp_num)
+            ave_temp[temp_index] = round(ave_temp[temp_index] / float(temp_num), 2)
             print("平均値:", ave_temp[temp_index])
-            print("日にち:", d_date)
+            #print("日にち:", d_date)
+            print("最高値:", high_temp[temp_index])
+            print("最低値:", low_temp[temp_index])
             
             temp_index += 1
             temp_num = 1
             ave_temp[temp_index] = air_temperature
+            high_temp[temp_index] = air_temperature
+            low_temp[temp_index] = air_temperature          
             print(air_temperature)
             pre_date = d_date
     else:
-        print("--ループ終了--")
-        ave_temp[temp_index] /= float(temp_num)
+        #print("--ループ終了--")
+        ave_temp[temp_index] = round(ave_temp[temp_index] / float(temp_num), 2)
         print("平均値:", ave_temp[temp_index])
-        print("データ数:", temp_num)
-        print("日にち:", d_date)
+        #print("データ数:", temp_num)
+        #print("日にち:", d_date)
+        print("最高値:", high_temp[temp_index])
+        print("最低値:", low_temp[temp_index])
     
-    return True
+    result = {"average": ave_temp, "max": high_temp, "min": low_temp}
+    return result
 
 if __name__ == '__main__' :
     getEnvData()

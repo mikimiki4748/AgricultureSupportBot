@@ -1,5 +1,4 @@
 # -*- coding: utf-8 -*-
-from flask.ext.sqlalchemy import SQLAlchemy
 from flask import Flask, render_template, request
 import os
 

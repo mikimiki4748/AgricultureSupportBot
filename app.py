@@ -28,26 +28,31 @@ from src.db_handler import update_env_data
 
 app = Flask(__name__)
 
-# 接続パス、環境変数にあればそれ優先
-REDIS_URL = os.environ.get('REDIS_URL') if os.environ.get(
-    'REDIS_URL') != None else 'redis://localhost:6379'
-# データベースの指定
-DATABASE_INDEX = 1  # 0じゃなくあえて1
-# コネクションプールから１つ取得
-pool = redis.ConnectionPool.from_url(REDIS_URL, db=DATABASE_INDEX)
-# コネクションを利用
-r = redis.StrictRedis(connection_pool=pool)
+# # 接続パス、環境変数にあればそれ優先
+# REDIS_URL = os.environ.get('REDIS_URL') if os.environ.get(
+#     'REDIS_URL') != None else 'redis://localhost:6379'
+# # データベースの指定
+# DATABASE_INDEX = 1  # 0じゃなくあえて1
+# # コネクションプールから１つ取得
+# pool = redis.ConnectionPool.from_url(REDIS_URL, db=DATABASE_INDEX)
+# # コネクションを利用
+# r = redis.StrictRedis(connection_pool=pool)
 
 
 @app.route("/")
 def chart():
-    print(getEnvData())
+    days_ago = 6
+    data_dict = getEnvData(days_ago)
+    
     dt_tday = datetime.now()
     labels = [(dt_tday - timedelta(days=i)).strftime('%Y-%m-%d')
-        for i in range(6,-1,-1)]
+        for i in range(days_ago,-1,-1)]
     #values = get_weekly_temp()
-    values = [10,9,8,7,6,4,7,8]
-    return render_template('chart.html', values=values, labels=labels)
+    dataset_ave = data_dict.get("average")
+    dataset_max = data_dict.get("max")
+    dataset_min = data_dict.get("min")
+    return render_template('chart.html', dataset_ave=dataset_ave,
+    dataset_max=dataset_max, dataset_min=dataset_min, labels=labels)
 
 @app.route("/update")
 def update_db():
