@@ -21,9 +21,10 @@ from flask import send_from_directory
 from work.temperature import temp
 from work.humidity import humi
 from work.visual import test
-from get_web_envdata import getEnvData
-from src.db_handler import get_weekly_temp
-from src.db_handler import update_env_data
+
+from src.env_manager import get_avg_temp
+from src.env_manager import get_max_temp
+from src.env_manager import get_min_temp
 
 
 app = Flask(__name__)
@@ -42,17 +43,17 @@ app = Flask(__name__)
 @app.route("/")
 def chart():
     days_ago = 6
-    data_dict = getEnvData(days_ago)
     
     dt_tday = datetime.now()
-    labels = [(dt_tday - timedelta(days=i)).strftime('%Y-%m-%d')
-        for i in range(days_ago,-1,-1)]
+    labels = [(dt_tday - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(days_ago,-1,-1)]
     #values = get_weekly_temp()
-    dataset_ave = data_dict.get("average")
-    dataset_max = data_dict.get("max")
-    dataset_min = data_dict.get("min")
+    dataset_ave = get_avg_temp(days_ago)
+    dataset_max = get_max_temp(days_ago)
+    dataset_min = get_min_temp(days_ago)
+
     return render_template('chart.html', dataset_ave=dataset_ave,
-    dataset_max=dataset_max, dataset_min=dataset_min, labels=labels)
+        dataset_max=dataset_max, dataset_min=dataset_min, labels=labels)
+
 
 @app.route("/update")
 def update_db():
