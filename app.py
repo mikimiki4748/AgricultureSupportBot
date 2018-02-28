@@ -42,10 +42,10 @@ app = Flask(__name__)
 
 @app.route("/")
 def chart():
-    days_ago = 6
+    days_ago = 7
     
     dt_tday = datetime.now()
-    labels = [(dt_tday - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(days_ago,-1,-1)]
+    labels = [(dt_tday - timedelta(days=i)).strftime('%Y-%m-%d') for i in range(days_ago,0,-1)]
     #values = get_weekly_temp()
     dataset_ave = get_avg_temp(days_ago)
     dataset_max = get_max_temp(days_ago)

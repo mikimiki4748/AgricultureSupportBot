@@ -50,12 +50,22 @@ def get_daily_temp(day_ago):
     daily_temps = []
 
     for i in range(day_ago,0,-1):
+        # if i == 0:
+        #     print("Today's data ")
+        #     daily_list = get_daily_data(0)
+        #     for daily_dict in daily_list:
+        #         key = daily_dict.get("date")
+        #         del daily_dict["date"]
+        #         daily_temps.append(daily_dict)
+        #     break
+
         dt_date = (datetime.now() - timedelta(days=i)).replace(hour=0,minute=0,second=0,microsecond=0)
         str_date = datetime.strftime(dt_date, date_format)
         #epc_date = int(time.mktime(dt_date.timetuple()))*1000
         #print(str_date, epc_date)
         daily_temp = r.hgetall(str_date)
         #print(dict_data)
+        
         if not daily_temp:
             print("Not found of data at "+str_date)
             daily_list = get_daily_data(i)#{"date":d_date, "avg_temp": avg_temp, "max_temp": max_temp, "min_temp": min_temp}
@@ -65,18 +75,19 @@ def get_daily_temp(day_ago):
                 r.hmset(key, daily_dict)
                 print(r.hgetall(key))
                 daily_temps.append(r.hgetall(key))
-            return daily_temps
+            break
+
         else:
             print("Can get from DB:"+str_date,daily_temp)
-            
             daily_temps.append(daily_temp)
+            
     return daily_temps
 
 
 if __name__ == '__main__' :
-    get_daily_temp(7)
-    print("---\n")
-    get_daily_temp(2)
+    # get_daily_temp(7)
+    # print("---\n")
+    # get_daily_temp(2)
     # 接続エラーがあれば終了
     # try:
     #     print('DB size : ' + str(r.dbsize()))
@@ -84,6 +95,6 @@ if __name__ == '__main__' :
     #     print(type(e))
     #     sys.exit()
     # set_db()
-    # del_db()
+    del_db()
 
 
