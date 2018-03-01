@@ -1,11 +1,12 @@
-# 環境データビューアアプリ
+# Flask Echo
 
-This app using [Flask](http://flask.pocoo.org/)
+Sample echo-bot using [Flask](http://flask.pocoo.org/)
 
 ## Getting started
 
 ```
+$ export LINE_CHANNEL_SECRET=YOUR_LINE_CHANNEL_SECRET
+$ export LINE_CHANNEL_ACCESS_TOKEN=YOUR_LINE_CHANNEL_ACCESS_TOKEN
+
 $ pip install -r requirements.txt
-$ redis-server
-$ python app.py
 ```
