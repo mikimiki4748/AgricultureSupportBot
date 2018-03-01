@@ -2,6 +2,8 @@ img/*
 !.gitignore
 
 __pycache__/*
+.vscode
 src/__pycache__/*
-work/__pycache__/*
-
+src/bot/__pycache__/*
+.python-version
+dump.rdb
