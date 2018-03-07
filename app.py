@@ -17,7 +17,7 @@ from flask import abort
 from flask import render_template
 from flask import send_from_directory
 
-from src.env_redis import get_daily_temp
+from src.daily_env import get_daily_temp
 
 
 app = Flask(__name__)
@@ -38,14 +38,14 @@ class gateway(enum.Enum):
 
 @app.route("/del")
 def db_reset():
-    from src.env_redis import del_db
+    from src.daily_db import del_db
     del_db()
     return 'delete DB'
     
 @app.route("/")
 def chart():
-    str_start = '2018-2-28 0:0:0'#TODO: timepicker, 順番
-    str_end   = '2018-3-2 0:0:0'
+    str_start = '2018-3-6 0:0:0'#TODO: timepicker, 順番
+    str_end   = '2018-3-8 0:0:0'
     timepicker_format = '%Y-%m-%d %H:%M:%S'
 
     dt_start = datetime.strptime(str_start, timepicker_format)
@@ -54,7 +54,9 @@ def chart():
     sens = gateway.anan.value
     daily_temp = get_daily_temp(sens['sensor'], sens['nodes'][0], dt_start, dt_end)
 
-    # print(daily_temp)
+    print(daily_temp)
+    for row in daily_temp:
+        print("contents: ", row)
     asc_date = [row[b'date'].decode('utf-8') for row in daily_temp]
     asc_avg = [float(row[b'avg_temp']) for row in daily_temp]
     asc_max = [float(row[b'max_temp']) for row in daily_temp]

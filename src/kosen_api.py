@@ -20,9 +20,10 @@ attr_list = ["nodeID","time","air_temperature",
     "wind_direction","rainfall","precipitation"]
 
 api_format = '%Y-%m-%dT%H:%M:%S.000000Z'
-time_format = '%Y-%m-%d %H:%M:%S'
-date_format = '%Y-%m-%d'
 response_format = '%Y-%m-%d %H:%M:%S.%f'
+time_format = '%Y/%m/%d %H:%M:%S'
+date_format = '%Y/%m/%d'
+
 token_response = {}
 
 def get_token():
@@ -47,46 +48,8 @@ def is_token_valid(token_response):
         datetime.strptime(token_response.get('Expire'), response_format) > datetime.now():
         return True
     return False
-    
-def get_util_now(day_ago):
-    reference_token = get_token()
 
-    url = 'http://www17337uj.sakura.ne.jp/v1/json/collection/item/'
-    gw_id   = '45327972'
-    gw_name = 'sensorData_v2_'+gw_id
-    node_id = '7'#7 15
-    #TODO: 気温以外の対応
-    keys = '[\"nodeID\",\"time\",\"air_temperature\"]'
-
-    end_time = datetime.now()
-    start_time = (end_time - timedelta(days=day_ago)).replace(hour=0,minute=0,second=0,microsecond=0)
-    print(datetime.strftime(start_time, api_format)+" - "+datetime.strftime(end_time, api_format))
-
-    start_epoch = int(time.mktime(start_time.timetuple()))*1000
-    end_epoch = int(time.mktime(end_time.timetuple()))*1000
-    query = '{\"$where\":\"this.time >= new Date('+str(start_epoch)+') && this.time <= new Date('+str(end_epoch)+')\",\"nodeID\":'+node_id+'}'
-    #query = quote(query)
-    
-    payload = {
-        'Name' :gw_name,
-        'Keys' :keys,
-        'Query':query
-    }
-    par_params = urllib.parse.urlencode(payload)
-    par_params = par_params.encode('ascii')
-    headers ={
-        'Authorization':reference_token,
-    }
-
-    res = requests.get(url,params=payload,headers=headers)
-    json_res = res.json()
-
-    if json_res['Response'] != 'Success':
-        print('Failed download environmental data.')
-        return False
-    return json_res['List']
-
-def get_the_day(sensor_id, node_id, env_kind, dt_day):
+def get_one_day(sensor_id, node_id, env_kind, dt_day):
     reference_token = get_token()
 
     url = 'http://www17337uj.sakura.ne.jp/v1/json/collection/item/'
@@ -97,7 +60,7 @@ def get_the_day(sensor_id, node_id, env_kind, dt_day):
 
     start_time = dt_day.replace(hour=0,minute=0,second=0,microsecond=0)
     end_time = dt_day.replace(hour=23,minute=59,second=59,microsecond=999)
-    print(datetime.strftime(start_time, api_format)+" - "+datetime.strftime(end_time, api_format))
+    print('取得範囲', datetime.strftime(start_time, api_format)+" - "+datetime.strftime(end_time, api_format))
 
     start_epoch = int(time.mktime(start_time.timetuple()))*1000
     end_epoch = int(time.mktime(end_time.timetuple()))*1000
@@ -123,8 +86,44 @@ def get_the_day(sensor_id, node_id, env_kind, dt_day):
         return False
     return json_res['List']
 
-def get_daily_data(sensor_id, node_id, env_kind, dt_target):
-    env_list = get_the_day(sensor_id, node_id, env_kind, dt_target)
+def download_one_day_data(sensor_id, node_id, env_kind, dt_target):
+    env_list = get_one_day(sensor_id, node_id, env_kind, dt_target)
+
+    avg_temp = 0 
+    max_temp = -100
+    min_temp = 100
+    temp_num = 0
+    str_date = ''
+
+    daily_dict = dict()
+    for env in env_list:
+        env_dict = dict(env)
+        str_time = env_dict.get('time', None)
+        if(str_time is None):
+            continue
+        api_time = datetime.strptime(str_time, api_format) + timedelta(hours = 9)#9時間プラス
+        str_date = datetime.strftime(api_time, date_format)
+        
+        #TODO:other element
+        air_temperature = env_dict.get('air_temperature', None)
+        if air_temperature is None:
+            continue
+       
+        temp_num += 1
+        avg_temp += air_temperature
+        if max_temp < air_temperature:
+            max_temp = air_temperature
+        if min_temp > air_temperature:
+            min_temp = air_temperature
+    else:
+        avg_temp = round(avg_temp / float(temp_num), 2)
+        daily_dict = {"date":str_date, "avg_temp": avg_temp, "max_temp": max_temp, "min_temp": min_temp}          
+        print("download_one_day_data return -> :", daily_dict)
+    
+    return daily_dict
+
+def download_some_day_data(sensor_id, node_id, env_kind, dt_target):
+    env_list = get_one_day(sensor_id, node_id, env_kind, dt_target)
 
     daily_data = list()
     avg_temp = 0 
@@ -139,7 +138,7 @@ def get_daily_data(sensor_id, node_id, env_kind, dt_target):
         if(str_time is None):
             continue
         api_time = datetime.strptime(str_time, api_format) + timedelta(hours = 9)#9時間プラス
-    #    d_time = datetime.strftime(api_time, time_format)
+        # d_time = datetime.strftime(api_time, time_format)
         d_date = datetime.strftime(api_time, date_format)
         
         #TODO:other element
@@ -179,8 +178,6 @@ def get_daily_data(sensor_id, node_id, env_kind, dt_target):
         print("最低値:", min_temp)
     
     return daily_data
-
-
 if __name__ == '__main__' :
     daily_data = get_daily_data(1)
     for i in range(len(daily_data)):
