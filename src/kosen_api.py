@@ -11,7 +11,8 @@ from datetime import datetime
 from datetime import timedelta
 from urllib.parse import urlencode
 from urllib.parse import quote
- 
+
+from src.row_db import put_row_temp
  
 attr_list = ["nodeID","time","air_temperature",
     "relative_humidity","illuminance","ATPR",
@@ -108,7 +109,8 @@ def download_one_day_data(sensor_id, node_id, env_kind, dt_target):
         air_temperature = env_dict.get('air_temperature', None)
         if air_temperature is None:
             continue
-       
+        put_row_temp(sensor_id, node_id, api_time, air_temperature)# DB save
+
         temp_num += 1
         avg_temp += air_temperature
         if max_temp < air_temperature:

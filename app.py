@@ -44,8 +44,8 @@ def db_reset():
     
 @app.route("/")
 def chart():
-    str_start = '2018-3-6 0:0:0'#TODO: timepicker, 順番
-    str_end   = '2018-3-8 0:0:0'
+    str_start = '2018-3-6 10:0:0'#TODO: timepicker, 順番
+    str_end   = '2018-3-7 20:0:0'
     timepicker_format = '%Y-%m-%d %H:%M:%S'
 
     dt_start = datetime.strptime(str_start, timepicker_format)

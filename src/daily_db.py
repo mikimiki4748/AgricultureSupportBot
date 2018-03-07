@@ -18,7 +18,7 @@ r = redis.StrictRedis(connection_pool=pool)
 db_date_format = "%Y/%m/%d"
 
 def del_db():
-    print("DB削除　キー", r.keys())
+    print("DB削除するキー", r.keys())
     r.flushdb()
 
 def gen_key(str_sensor_id, str_node_id, dt_date, int_attr_id):
