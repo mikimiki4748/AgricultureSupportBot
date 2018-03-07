@@ -12,6 +12,7 @@ from datetime import timedelta
 from urllib.parse import urlencode
 from urllib.parse import quote
  
+ 
 attr_list = ["nodeID","time","air_temperature",
     "relative_humidity","illuminance","ATPR",
     "soil_temperature","soil_moisture_content",
@@ -23,7 +24,6 @@ time_format = '%Y-%m-%d %H:%M:%S'
 date_format = '%Y-%m-%d'
 
 def getToken():
-   # url = "http://agridatabase.mybluemix.net/v1/json/token/"
    url = 'http://www17337uj.sakura.ne.jp:3100/getToken'
    with urllib.request.urlopen(url) as res:
       html = res.read().decode("utf-8")
@@ -182,9 +182,44 @@ def get_util_now(day_ago):
         return False
     return json_res['List']
 
+def get_only(sensor_id, node_id, env_kind, dt_day):
+    reference_token = getToken()
+    url = 'http://www17337uj.sakura.ne.jp/v1/json/collection/item/'
+    gw_name = 'sensorData_v2_'+sensor_id
+    
+    #TODO: 気温以外の対応
+    keys = '[\"nodeID\",\"time\",\"air_temperature\"]'
 
-def get_daily_data(day_ago):
-    env_list = get_util_now(day_ago)
+    start_time = dt_day.replace(hour=0,minute=0,second=0,microsecond=0)
+    end_time = dt_day.replace(hour=23,minute=59,second=59,microsecond=999)
+    print(datetime.strftime(start_time, api_format)+" - "+datetime.strftime(end_time, api_format))
+
+    start_epoch = int(time.mktime(start_time.timetuple()))*1000
+    end_epoch = int(time.mktime(end_time.timetuple()))*1000
+    query = '{\"$where\":\"this.time >= new Date('+str(start_epoch)+') && this.time <= new Date('+str(end_epoch)+')\",\"nodeID\":'+node_id+'}'
+    #query = quote(query)
+    
+    payload = {
+        'Name' :gw_name,
+        'Keys' :keys,
+        'Query':query
+    }
+    par_params = urllib.parse.urlencode(payload)
+    par_params = par_params.encode('ascii')
+    headers ={
+        'Authorization':reference_token,
+    }
+
+    res = requests.get(url,params=payload,headers=headers)
+    json_res = res.json()
+
+    if json_res['Response'] != 'Success':
+        print('Failed download environmental data.')
+        return False
+    return json_res['List']
+
+def get_daily_data(sensor_id, node_id, env_kind, dt_target):
+    env_list = get_only(sensor_id, node_id, env_kind, dt_target)
 
     daily_data = list()
     avg_temp = 0 
@@ -219,7 +254,7 @@ def get_daily_data(day_ago):
             #TODO:同じ処理を書いている.関数化orクラス化.
             avg_temp = round(avg_temp / float(temp_num), 2)
             daily_data.append({"date":pre_date, "avg_temp": avg_temp, "max_temp": max_temp, "min_temp": min_temp})            
-            print("日にち:", d_date)
+            print("日にち:", pre_date)
             print("平均値:", avg_temp)
             print("最高値:", max_temp)
             print("最低値:", min_temp)

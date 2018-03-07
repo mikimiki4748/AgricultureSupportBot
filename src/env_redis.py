@@ -1,7 +1,6 @@
 import os
 import sys
 import redis
-import enum
 import json
 import requests
 import time
@@ -21,66 +20,62 @@ pool = redis.ConnectionPool.from_url(REDIS_URL, db=DATABASE_INDEX)
 r = redis.StrictRedis(connection_pool=pool)
 
 
-class gateway(enum.Enum):
-    anan  = "45327972"
-    ishii = "45324459"
-# def get_db_id(gateway_id= "45327972", node_id="7"):
-#     return gateway_id+"_"+node_id
-
-def set_db():
-    # キーの登録 飛び飛び
-    r.set('key' + str(i * 2), {'val': 'val' + str(i)})
-
-    # キーの参照
-    for i in range(10):
-        key = 'key' + str(i)
-        print(key + ' → ' + str(r.get(key)))
-
 def del_db():
     # キー一覧
     print("キー一覧 --before--", r.keys())
-    # 設定したデータベースの削除
     r.flushdb()
     print("キー一覧 --after--", r.keys())
 
+def get_today_temp(sensor_id, node_id):
+    '''
+    DBから今日の分取得
+    足りない分をとってくる
+    DBセット
+    返す
+    r.hmset(key, daily_dict)'''
 
-def get_daily_temp(day_ago):
-    '''日ごとの平均・最高・最低気温を返す'''
+    
+def get_daily_temp(sensor_id, node_id, dt_bgn, dt_end):
+    '''日ごとの平均・最高・最低気温を返す
+    昨日より未来の日付は指定できない
+    今日のデータは別の関数で取得する'''
     date_format = '%Y-%m-%d'
+    daystamp_format = '%Y%m%d'
     daily_temps = []
+    
+    dt_bgn.replace(hour=0,minute=0,second=0,microsecond=0)
+    dt_end.replace(hour=0,minute=0,second=0,microsecond=0)
+    dt_yday = datetime.now().replace(hour=0,minute=0,second=0,microsecond=0) - timedelta(days=1)
+    if dt_end >= dt_yday:
+        dt_end = dt_yday
+    
+    dt_target = dt_bgn
+    while dt_target <= dt_end:
+        str_target_date = datetime.strftime(dt_target, daystamp_format)
+        print("lopp:", str_target_date)    
 
-    for i in range(day_ago,0,-1):
-        # if i == 0:
-        #     print("Today's data ")
-        #     daily_list = get_daily_data(0)
-        #     for daily_dict in daily_list:
-        #         key = daily_dict.get("date")
-        #         del daily_dict["date"]
-        #         daily_temps.append(daily_dict)
-        #     break
-
-        dt_date = (datetime.now() - timedelta(days=i)).replace(hour=0,minute=0,second=0,microsecond=0)
-        str_date = datetime.strftime(dt_date, date_format)
-        #epc_date = int(time.mktime(dt_date.timetuple()))*1000
-        #print(str_date, epc_date)
-        daily_temp = r.hgetall(str_date)
-        #print(dict_data)
+        key = sensor_id + node_id + str_target_date + "0"#TODO:env id
+        # print(key)
+        daily_temp = r.hgetall(key)
+        # print(daily_temp)
         
         if not daily_temp:
-            print("Not found of data at "+str_date)
-            daily_list = get_daily_data(i)#{"date":d_date, "avg_temp": avg_temp, "max_temp": max_temp, "min_temp": min_temp}
-            for daily_dict in daily_list:
-                key = daily_dict.get("date")
-                del daily_dict["date"]
-                r.hmset(key, daily_dict)
-                print(r.hgetall(key))
-                daily_temps.append(r.hgetall(key))
-            break
+            print("Not found of data at "+ datetime.strftime(dt_target, date_format))
+            #{"date":d_date, "avg_temp": avg_temp, "max_temp": max_temp, "min_temp": min_temp}
+            daily_list = get_daily_data(sensor_id, node_id, 0, dt_target)
 
+            for daily_dict in daily_list:
+                print(daily_dict)
+                daily_dict['valid':True]
+                r.hmset(key, daily_dict)
+                print('redis save check:', r.hgetall(key))
+                daily_temps.append(r.hgetall(key))
         else:
-            print("Can get from DB:"+str_date,daily_temp)
+            print("Can get from DB:"+ datetime.strftime(dt_target, date_format), daily_temp)
             daily_temps.append(daily_temp)
-            
+        
+        dt_target += timedelta(days=1)
+
     return daily_temps
 
 
