@@ -45,7 +45,7 @@ def db_reset():
 @app.route("/")
 def chart():
     str_start = '2018-2-28 0:0:0'#TODO: timepicker, 順番
-    str_end   = '2018-3-1 0:0:0'
+    str_end   = '2018-3-2 0:0:0'
     timepicker_format = '%Y-%m-%d %H:%M:%S'
 
     dt_start = datetime.strptime(str_start, timepicker_format)
@@ -54,7 +54,7 @@ def chart():
     sens = gateway.anan.value
     daily_temp = get_daily_temp(sens['sensor'], sens['nodes'][0], dt_start, dt_end)
 
-    print(daily_temp)
+    # print(daily_temp)
     asc_date = [row[b'date'].decode('utf-8') for row in daily_temp]
     asc_avg = [float(row[b'avg_temp']) for row in daily_temp]
     asc_max = [float(row[b'max_temp']) for row in daily_temp]

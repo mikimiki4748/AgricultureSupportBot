@@ -21,10 +21,8 @@ r = redis.StrictRedis(connection_pool=pool)
 
 
 def del_db():
-    # キー一覧
-    print("キー一覧 --before--", r.keys())
+    print("DB削除　キー", r.keys())
     r.flushdb()
-    print("キー一覧 --after--", r.keys())
 
 def get_today_temp(sensor_id, node_id):
     '''
@@ -34,7 +32,7 @@ def get_today_temp(sensor_id, node_id):
     返す
     r.hmset(key, daily_dict)'''
 
-    
+
 def get_daily_temp(sensor_id, node_id, dt_bgn, dt_end):
     '''日ごとの平均・最高・最低気温を返す
     昨日より未来の日付は指定できない
@@ -52,7 +50,6 @@ def get_daily_temp(sensor_id, node_id, dt_bgn, dt_end):
     dt_target = dt_bgn
     while dt_target <= dt_end:
         str_target_date = datetime.strftime(dt_target, daystamp_format)
-        print("lopp:", str_target_date)    
 
         key = sensor_id + node_id + str_target_date + "0"#TODO:env id
         # print(key)
@@ -66,7 +63,7 @@ def get_daily_temp(sensor_id, node_id, dt_bgn, dt_end):
 
             for daily_dict in daily_list:
                 print(daily_dict)
-                daily_dict['valid':True]
+                daily_dict['valid'] = True
                 r.hmset(key, daily_dict)
                 print('redis save check:', r.hgetall(key))
                 daily_temps.append(r.hgetall(key))
@@ -78,18 +75,5 @@ def get_daily_temp(sensor_id, node_id, dt_bgn, dt_end):
 
     return daily_temps
 
-
 if __name__ == '__main__' :
-    # get_daily_temp(7)
-    # print("---\n")
-    # get_daily_temp(2)
-    # 接続エラーがあれば終了
-    # try:
-    #     print('DB size : ' + str(r.dbsize()))
-    # except Exception as e:
-    #     print(type(e))
-    #     sys.exit()
-    # set_db()
     del_db()
-
-
