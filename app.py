@@ -57,7 +57,7 @@ def index():
             dt_end = dt_tmp
     except ValueError:
         dt_end = datetime.now() - timedelta(days=1)
-        dt_start = dt_end - timedelta(days=6)
+        dt_start = dt_end - timedelta(days=3)
 
         str_start  = datetime.strftime(dt_start, timepicker_format)
         str_end    = datetime.strftime(dt_end, timepicker_format)
