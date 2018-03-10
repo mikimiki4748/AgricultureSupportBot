@@ -27,15 +27,15 @@ def get_daily_temp(sensor_id, node_id, dt_bgn, dt_end):
             print("Not found on DB "+ datetime.strftime(dt_target, date_format))
             daily_dict = download_one_day_data(sensor_id, node_id, 0, dt_target)
             
-            daily_dict['valid'] = True
+            daily_dict['all'] = True
             put_data(sensor_id, node_id, dt_target, 0, daily_dict)
             #redis から出すときバイナリになるため、一回DBにセットしたものを使う.
             daily_dict = extract_data(sensor_id, node_id, dt_target, 0)
             print('DB save this:', daily_dict)
             daily_temps.append(daily_dict)
         else:
-            print("Can find on DB . date:"+ datetime.strftime(dt_target, date_format))
-            print("Can find on DB . data:"+ str(daily_temp))
+            # print("Can find on DB . date:"+ datetime.strftime(dt_target, date_format))
+            # print("Can find on DB . data:"+ str(daily_temp))
             daily_temps.append(daily_temp)
         
         dt_target += timedelta(days=1)

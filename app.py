@@ -22,15 +22,6 @@ from src.daily_env import get_daily_temp
 
 app = Flask(__name__)
 
-# # 接続パス、環境変数にあればそれ優先
-# REDIS_URL = os.environ.get('REDIS_URL') if os.environ.get(
-#     'REDIS_URL') != None else 'redis://localhost:6379'
-# # データベースの指定
-# DATABASE_INDEX = 1  # 0じゃなくあえて1
-# # コネクションプールから１つ取得
-# pool = redis.ConnectionPool.from_url(REDIS_URL, db=DATABASE_INDEX)
-# # コネクションを利用
-# r = redis.StrictRedis(connection_pool=pool)
 
 class gateway(enum.Enum):
     anan  = {'sensor': '45327972', 'nodes': ['7', '15']}
@@ -42,28 +33,51 @@ def db_reset():
     del_db()
     return 'delete DB'
     
-@app.route("/")
-def chart():
-    str_start = '2018-3-6 10:0:0'#TODO: timepicker, 順番
-    str_end   = '2018-3-7 20:0:0'
-    timepicker_format = '%Y-%m-%d %H:%M:%S'
+@app.route("/", methods=['GET', 'POST'])
+def index():
+    timepicker_format = '%Y-%m-%d'
 
-    dt_start = datetime.strptime(str_start, timepicker_format)
-    dt_end   = datetime.strptime(str_end,   timepicker_format)
+    dt_end = datetime.now() - timedelta(days=1)
+    dt_start = dt_end - timedelta(days=6)
 
+    str_start  = datetime.strftime(dt_start, timepicker_format)
+    str_end    = datetime.strftime(dt_end, timepicker_format)
+
+    if request.method == 'POST':
+        str_start = request.form['date_from']
+        str_end = request.form['date_to']
+        #TODO:injection
+
+    try:
+        dt_start = datetime.strptime(str_start, timepicker_format)
+        dt_end   = datetime.strptime(str_end,   timepicker_format)
+        if dt_start > dt_end:
+            dt_tmp = dt_start
+            dt_start = dt_end
+            dt_end = dt_tmp
+    except ValueError:
+        dt_end = datetime.now() - timedelta(days=1)
+        dt_start = dt_end - timedelta(days=6)
+
+        str_start  = datetime.strftime(dt_start, timepicker_format)
+        str_end    = datetime.strftime(dt_end, timepicker_format)
+    print("str_start",str_start)
+    print("str_end",str_end)
     sens = gateway.anan.value
     daily_temp = get_daily_temp(sens['sensor'], sens['nodes'][0], dt_start, dt_end)
 
-    print(daily_temp)
     for row in daily_temp:
         print("contents: ", row)
-    asc_date = [row[b'date'].decode('utf-8') for row in daily_temp]
-    asc_avg = [float(row[b'avg_temp']) for row in daily_temp]
-    asc_max = [float(row[b'max_temp']) for row in daily_temp]
-    asc_min = [float(row[b'min_temp']) for row in daily_temp]
+    asc_date = [row[b'date'].decode('utf-8') for row in daily_temp if row[b'valid'] == b"True"]
+    asc_avg = [float(row[b'avg_temp']) for row in daily_temp if row[b'valid'] == b"True"]
+    asc_max = [float(row[b'max_temp']) for row in daily_temp if row[b'valid'] == b"True"]
+    asc_min = [float(row[b'min_temp']) for row in daily_temp if row[b'valid'] == b"True"]
+
+    print(str_start, str_end)
 
     return render_template('chart.html', dataset_ave=asc_avg,
-        dataset_max=asc_max, dataset_min=asc_min, labels=asc_date)
+        dataset_max=asc_max, dataset_min=asc_min, labels=asc_date,
+        str_start=str_start, str_end=str_end )
 
 @app.route("/update")
 def update_db():
