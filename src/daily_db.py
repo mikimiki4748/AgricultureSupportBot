@@ -22,7 +22,7 @@ def del_db():
     r.flushdb()
 
 def gen_key(str_sensor_id, str_node_id, dt_date, int_attr_id):
-    return str_sensor_id + str_node_id + dt_date.strftime(db_date_format) + str(int_attr_id)
+    return "day_"+str_sensor_id +"_"+ str_node_id +"_"+ dt_date.strftime(db_date_format) +"_"+ str(int_attr_id)
 
 def extract_data(str_sensor_id, str_node_id, dt_date, int_attr_id):
     key = gen_key(str_sensor_id, str_node_id, dt_date, int_attr_id)
