@@ -6,6 +6,7 @@ import sys
 import time
 import re
 import enum
+import threading
 from argparse import ArgumentParser
 from datetime import datetime
 from datetime import timedelta
@@ -18,24 +19,43 @@ from flask import render_template
 from flask import send_from_directory
 
 from src.daily_env import get_daily_temp
-
+from src.daily_env import update_one_year
 
 app = Flask(__name__)
 
-
+timepicker_format = '%Y-%m-%d'
 class gateway(enum.Enum):
     anan  = {'sensor': '45327972', 'nodes': ['7', '15']}
     ishii  = {'sensor': '45324459', 'nodes': ['7', '15']}
+
+class TestThread(threading.Thread):
+    """docstring for TestThread"""
+
+    def __init__(self, n, t):
+        super(TestThread, self).__init__()
+        self.n = n
+        self.t = t
+
+    def run(self):
+        pass
 
 @app.route("/del")
 def db_reset():
     from src.daily_db import del_db
     del_db()
     return 'delete DB'
-    
+
+# @app.route("/update")
+# def db_update():
+#     sens = gateway.anan.value
+#     update_one_year(sens['sensor'], sens['nodes'][0])
+#     return 'update DB'
+
 @app.route("/", methods=['GET', 'POST'])
 def index():
-    timepicker_format = '%Y-%m-%d'
+    # render_template('chart.html', dataset_ave=[0,0],
+    #     dataset_max=[0,0], dataset_min=[0,0], labels=[0,0],
+    #     str_start="str_start", str_end="str_end" )
 
     dt_end = datetime.now() - timedelta(days=1)
     dt_start = dt_end - timedelta(days=6)

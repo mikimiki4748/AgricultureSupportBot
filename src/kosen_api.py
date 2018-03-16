@@ -89,7 +89,7 @@ def get_one_day(sensor_id, node_id, env_kind, dt_day):
 
 def download_one_day_data(sensor_id, node_id, env_kind, dt_target):
     env_list = get_one_day(sensor_id, node_id, env_kind, dt_target)
-
+    print(env_list)
     avg_temp = 0 
     max_temp = -100
     min_temp = 100
