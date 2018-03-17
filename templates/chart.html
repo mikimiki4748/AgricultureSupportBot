@@ -16,8 +16,8 @@
             <!-- <label for="name">名前</label> -->
 
             {% if str_start and str_end %}
-              <input type="text" class="form-control" name="date_from" placeholder="例.2018-3-1" value={{ str_start }} />～
-              <input type="text" class="form-control" name="date_to" placeholder="例.2018-3-7" value={{ str_end }} />を
+              <input type="text" class="form-control" name="date_from"  value={{ str_start }} />～
+              <input type="text" class="form-control" name="date_to"  value={{ str_end }} />を
             {% else %}
               <input type="text" class="form-control" name="date_from" placeholder="例.2018-3-1"/>～
               <input type="text" class="form-control" name="date_to" placeholder="例.2018-3-7"/>を

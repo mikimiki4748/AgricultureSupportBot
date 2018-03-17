@@ -21,23 +21,13 @@ from flask import send_from_directory
 from src.daily_env import get_daily_temp
 from src.daily_env import update_one_year
 
-app = Flask(__name__)
 
+app = Flask(__name__)
 timepicker_format = '%Y-%m-%d'
+
 class gateway(enum.Enum):
     anan  = {'sensor': '45327972', 'nodes': ['7', '15']}
     ishii  = {'sensor': '45324459', 'nodes': ['7', '15']}
-
-class TestThread(threading.Thread):
-    """docstring for TestThread"""
-
-    def __init__(self, n, t):
-        super(TestThread, self).__init__()
-        self.n = n
-        self.t = t
-
-    def run(self):
-        pass
 
 @app.route("/del")
 def db_reset():
@@ -53,36 +43,37 @@ def db_reset():
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
-    # render_template('chart.html', dataset_ave=[0,0],
-    #     dataset_max=[0,0], dataset_min=[0,0], labels=[0,0],
-    #     str_start="str_start", str_end="str_end" )
-
-    dt_end = datetime.now() - timedelta(days=1)
-    dt_start = dt_end - timedelta(days=6)
-
-    str_start  = datetime.strftime(dt_start, timepicker_format)
-    str_end    = datetime.strftime(dt_end, timepicker_format)
-
+    str_start = str()
+    str_end = str()
+    dt_start = datetime.now()
+    dt_end   = datetime.now()
+            
     if request.method == 'POST':
         str_start = request.form['date_from']
         str_end = request.form['date_to']
         #TODO:injection
 
-    try:
-        dt_start = datetime.strptime(str_start, timepicker_format)
-        dt_end   = datetime.strptime(str_end,   timepicker_format)
-        if dt_start > dt_end:
-            dt_tmp = dt_start
-            dt_start = dt_end
-            dt_end = dt_tmp
-    except ValueError:
+        try:
+            dt_start = datetime.strptime(str_start, timepicker_format)
+            dt_end   = datetime.strptime(str_end,   timepicker_format)
+            if dt_start > dt_end:
+                dt_tmp = dt_start
+                dt_start = dt_end
+                dt_end = dt_tmp
+                
+        except ValueError:
+            dt_end = datetime.now() - timedelta(days=1)
+            dt_start = dt_end - timedelta(days=6)
+            str_start = datetime.strftime(dt_start, timepicker_format)
+            str_end   = datetime.strftime(dt_end, timepicker_format)
+    else:
         dt_end = datetime.now() - timedelta(days=1)
         dt_start = dt_end - timedelta(days=6)
+        str_start = datetime.strftime(dt_start, timepicker_format)
+        str_end   = datetime.strftime(dt_end, timepicker_format)
+    
+    print("表示範囲", str_start, '~', str_end)
 
-        str_start  = datetime.strftime(dt_start, timepicker_format)
-        str_end    = datetime.strftime(dt_end, timepicker_format)
-    print("str_start",str_start)
-    print("str_end",str_end)
     sens = gateway.anan.value
     daily_temp = get_daily_temp(sens['sensor'], sens['nodes'][0], dt_start, dt_end)
 
@@ -92,8 +83,6 @@ def index():
     asc_avg = [float(row[b'avg_temp']) for row in daily_temp if row[b'valid'] == b"True"]
     asc_max = [float(row[b'max_temp']) for row in daily_temp if row[b'valid'] == b"True"]
     asc_min = [float(row[b'min_temp']) for row in daily_temp if row[b'valid'] == b"True"]
-
-    print(str_start, str_end)
 
     return render_template('chart.html', dataset_ave=asc_avg,
         dataset_max=asc_max, dataset_min=asc_min, labels=asc_date,
