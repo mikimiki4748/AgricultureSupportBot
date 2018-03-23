@@ -17,6 +17,7 @@ from flask import request
 from flask import abort
 from flask import render_template
 from flask import send_from_directory
+from flask import make_response
 
 from src.daily_env import get_daily_temp
 from src.daily_env import update_one_year
@@ -35,11 +36,11 @@ def db_reset():
     del_db()
     return 'delete DB'
 
-# @app.route("/update")
-# def db_update():
-#     sens = gateway.anan.value
-#     update_one_year(sens['sensor'], sens['nodes'][0])
-#     return 'update DB'
+@app.route("/update")
+def db_update():
+    sens = gateway.anan.value
+    update_one_year(sens['sensor'], sens['nodes'][0])
+    return 'update DB'
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
@@ -47,7 +48,7 @@ def index():
     str_end = str()
     dt_start = datetime.now()
     dt_end   = datetime.now()
-            
+    
     if request.method == 'POST':
         str_start = request.form['date_from']
         str_end = request.form['date_to']
@@ -88,23 +89,6 @@ def index():
         dataset_max=asc_max, dataset_min=asc_min, labels=asc_date,
         str_start=str_start, str_end=str_end )
 
-@app.route("/update")
-def update_db():
-    api_format = '%Y-%m-%dT%H:%M:%S.000000Z'
-    # time_format = '%Y-%m-%d %H:%M:%S'
-    # date_format = '%Y-%m-%d'
-    days_ago = 1
-    while True:
-        end_day = datetime.now()
-        start_day = (end_day - timedelta(weeks=days_ago)).replace(hour=0,minute=0,second=0,microsecond=0)
-        print(datetime.strftime(start_day, api_format)+" - "+datetime.strftime(end_day, api_format))
-
-        # start_epoch = int(time.mktime(start_day.timetuple()))*1000
-        # end_epoch = int(time.mktime(end_day.timetuple()))*1000
-    
-        days_ago += 1
-        if days_ago > 5:
-            break
 
 @app.route('/tmp/<path:filename>')
 def csv(filename):  

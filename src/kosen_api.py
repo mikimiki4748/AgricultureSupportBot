@@ -123,67 +123,11 @@ def download_one_day_data(sensor_id, node_id, env_kind, dt_target):
         if max_temp == -100 or min_temp == 100:
             daily_dict = {"date":str_date, "valid": False, "avg_temp": None, "max_temp": None, "min_temp": None}          
         else:
-            daily_dict = {"date":str_date, "valid": True, "avg_temp": avg_temp, "max_temp": max_temp, "min_temp": min_temp}          
+            daily_dict = {"date":str_date, "valid": True, "avg_temp": avg_temp, "max_temp": max_temp, "min_temp": min_temp}
         # print("download_one_day_data return -> :", daily_dict)
     
     return daily_dict
 
-def download_some_day_data(sensor_id, node_id, env_kind, dt_target):
-    env_list = get_one_day(sensor_id, node_id, env_kind, dt_target)
-
-    daily_data = list()
-    avg_temp = 0 
-    max_temp = -100
-    min_temp = 100
-    temp_num = 0
-    pre_date = datetime.strftime(datetime.strptime(dict(env_list[0]).get('time', None), api_format) + timedelta(hours = 9), date_format)
-    
-    for data_json in env_list:
-        data_dict = dict(data_json)
-        str_time = data_dict.get('time', None)
-        if(str_time is None):
-            continue
-        api_time = datetime.strptime(str_time, api_format) + timedelta(hours = 9)#9時間プラス
-        # d_time = datetime.strftime(api_time, time_format)
-        d_date = datetime.strftime(api_time, date_format)
-        
-        #TODO:other element
-        air_temperature = data_dict.get('air_temperature', None)
-        if air_temperature is None:
-            continue
-        
-        if d_date == pre_date:
-            temp_num += 1
-            avg_temp += air_temperature
-            #print(air_temperature)
-            if max_temp < air_temperature:
-                max_temp = air_temperature
-            if min_temp > air_temperature:
-                min_temp = air_temperature
-        else:
-            #TODO:同じ処理を書いている.関数化orクラス化.
-            avg_temp = round(avg_temp / float(temp_num), 2)
-            daily_data.append({"date":pre_date, "avg_temp": avg_temp, "max_temp": max_temp, "min_temp": min_temp})            
-            print("日にち:", pre_date)
-            print("平均値:", avg_temp)
-            print("最高値:", max_temp)
-            print("最低値:", min_temp)
-            
-            temp_num = 1
-            avg_temp = air_temperature
-            max_temp = air_temperature
-            min_temp = air_temperature
-            #print(air_temperature)
-            pre_date = d_date
-    else:
-        avg_temp = round(avg_temp / float(temp_num), 2)
-        daily_data.append({"date":d_date, "avg_temp": avg_temp, "max_temp": max_temp, "min_temp": min_temp})            
-        print("日にち:", d_date)
-        print("平均値:", avg_temp)
-        print("最高値:", max_temp)
-        print("最低値:", min_temp)
-    
-    return daily_data
 
 if __name__ == '__main__' :
     daily_data = get_daily_data(1)

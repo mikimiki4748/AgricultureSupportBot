@@ -4,8 +4,10 @@ import time
 from datetime import datetime
 from datetime import timedelta
 
-REDIS_URL = os.environ.get('REDIS_URL') if os.environ.get(
-    'REDIS_URL') != None else 'redis://localhost:6379'
+# REDIS_URL = os.environ.get('REDIS_URL') if os.environ.get(
+#     'REDIS_URL') != None else 'redis://localhost:6379'
+REDIS_URL = "redis://h:p774ad043071921437ca90d64f824d285cf281db060e3e93c9490e249892aa1f7@ec2-35-173-68-85.compute-1.amazonaws.com:9169"
+
 DATABASE_INDEX = 1
 pool = redis.ConnectionPool.from_url(REDIS_URL, db=DATABASE_INDEX)
 r = redis.StrictRedis(connection_pool=pool)
