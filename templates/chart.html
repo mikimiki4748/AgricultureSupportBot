@@ -3,18 +3,22 @@
   <!-- Form
   ================================================== -->
 <script src='static/Chart.min.js'></script>
+<script src='static/jquery.cookie-1.4.1.min.js'></script>
 
 <h1>平均・最高・最低気温</h1>
 <br>
-<br>
-
 <div class="form">
     <div class="container">
       <div class="row">
         <div class="col-md-12">
-          <form action="/" method="post" class="form-inline">
-            <!-- <label for="name">名前</label> -->
+          <form action="/" method="post" id="range-form"class="form-inline">
+            センサーID - ノードID：
+            <input type="text" id="sens-node-input" list="sens-node-list" placeholder="センサID-ノードID" >
+            <datalist id="sens-node-list">
+            </datalist>
 
+            <div style="margin:10px">
+            
             {% if str_start and str_end %}
               <input type="text" class="form-control" name="date_from"  value={{ str_start }} />～
               <input type="text" class="form-control" name="date_to"  value={{ str_end }} />を
@@ -22,10 +26,11 @@
               <input type="text" class="form-control" name="date_from" placeholder="例.2018-3-1"/>～
               <input type="text" class="form-control" name="date_to" placeholder="例.2018-3-7"/>を
             {% endif %}
-            <button type="submit" class="btn btn-default">描画</button>
+            <button type="submit" id="draw-btn"class="btn btn-default">描画</button>
           </form>
         </div>
       </div>
+      
     </div>
   </div>
 
@@ -33,6 +38,25 @@
 <canvas id="chart" width="600" height="400"></canvas>
 
 <script>
+    $(document).ready(
+      function(){
+        //論理和で空文字代入はNUllのときのエラー対策.
+        const sens_node = ($.cookie("sens-node")|| '').split(",");
+        
+        for(var i=0;i<sens_node.length;i++){
+          console.log(i);
+          $("#sens-node-list").append(`<option value=\"${sens_node[i]}\">`);
+        }
+
+        $('#draw-btn').click(function() {
+          var current_cookie = $.cookie("sens-node");
+          //TODO:Cookieにないときだけ追加
+          current_cookie += $("#sens-node-input").val() + ",";
+          $.cookie("sens-node", current_cookie);
+          $('#range-form').submit();
+        });
+      }
+    );
     // bar chart data
     var barData = {
         labels : [{% for item in labels %}

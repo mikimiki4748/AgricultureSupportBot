@@ -42,8 +42,26 @@ def db_update():
     update_one_year(sens['sensor'], sens['nodes'][0])
     return 'update DB'
 
+@app.route("/cookie", methods=['POST'])
+def set_cookie():
+    sens_id = request.form['sens_id']
+    node_id = request.form['node_id']
+
+    content = "センサID({0})とノードID({1})を保存しました".format(sens_id, node_id)
+    response = make_response(content)
+    # max_age = 60 * 60 * 24 * 120 # 120 days
+    # expires = int(datetime.now().timestamp()) + max_age
+    response.set_cookie('sens_id', value=sens_id, max_age=None,
+        expires=None, path='/', domain=None, secure=None, httponly=False)
+    response.set_cookie('node_id', value=node_id, max_age=None,
+        expires=None, path='/', domain=None, secure=None, httponly=False)
+    return response
+
 @app.route("/", methods=['GET', 'POST'])
 def index():
+    sens_id = request.cookies.get('sens_id', 45327972)
+    node_id = request.cookies.get('node_id', 7)
+
     str_start = str()
     str_end = str()
     dt_start = datetime.now()
@@ -87,7 +105,8 @@ def index():
 
     return render_template('chart.html', dataset_ave=asc_avg,
         dataset_max=asc_max, dataset_min=asc_min, labels=asc_date,
-        str_start=str_start, str_end=str_end )
+        str_start=str_start, str_end=str_end,
+        sens_id = sens_id, node_id = node_id )
 
 
 @app.route('/tmp/<path:filename>')
