@@ -70,7 +70,6 @@ def index():
     if request.method == 'POST':
         str_start = request.form['date_from']
         str_end = request.form['date_to']
-        #TODO:injection
 
         try:
             dt_start = datetime.strptime(str_start, timepicker_format)
