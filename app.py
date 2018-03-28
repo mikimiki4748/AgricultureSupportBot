@@ -42,32 +42,19 @@ def db_update():
     update_one_year(sens['sensor'], sens['nodes'][0])
     return 'update DB'
 
-@app.route("/cookie", methods=['POST'])
-def set_cookie():
-    sens_id = request.form['sens_id']
-    node_id = request.form['node_id']
-
-    content = "センサID({0})とノードID({1})を保存しました".format(sens_id, node_id)
-    response = make_response(content)
-    # max_age = 60 * 60 * 24 * 120 # 120 days
-    # expires = int(datetime.now().timestamp()) + max_age
-    response.set_cookie('sens_id', value=sens_id, max_age=None,
-        expires=None, path='/', domain=None, secure=None, httponly=False)
-    response.set_cookie('node_id', value=node_id, max_age=None,
-        expires=None, path='/', domain=None, secure=None, httponly=False)
-    return response
 
 @app.route("/", methods=['GET', 'POST'])
 def index():
-    sens_id = request.cookies.get('sens_id', 45327972)
-    node_id = request.cookies.get('node_id', 7)
-
     str_start = str()
     str_end = str()
     dt_start = datetime.now()
     dt_end   = datetime.now()
     
     if request.method == 'POST':
+        print( request.form['sens_node_select'])
+        sens_id = request.form['sens_node_select'].split('-')[1]
+        node_id = request.form['sens_node_select'].split('-')[2]
+
         str_start = request.form['date_from']
         str_end = request.form['date_to']
 
@@ -91,12 +78,11 @@ def index():
         str_end   = datetime.strftime(dt_end, timepicker_format)
     
     print("表示範囲", str_start, '~', str_end)
+    print("sens_id:{0} ,node_id:{1}".format(sens_id, node_id))
+    daily_temp = get_daily_temp(sens_id, node_id, dt_start, dt_end)
 
-    sens = gateway.anan.value
-    daily_temp = get_daily_temp(sens['sensor'], sens['nodes'][0], dt_start, dt_end)
-
-    for row in daily_temp:
-        print("contents: ", row)
+    # for row in daily_temp:
+    #     print("contents: ", row)
     asc_date = [row[b'date'].decode('utf-8') for row in daily_temp if row[b'valid'] == b"True"]
     asc_avg = [float(row[b'avg_temp']) for row in daily_temp if row[b'valid'] == b"True"]
     asc_max = [float(row[b'max_temp']) for row in daily_temp if row[b'valid'] == b"True"]
