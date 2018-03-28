@@ -42,41 +42,38 @@ def db_update():
     update_one_year(sens['sensor'], sens['nodes'][0])
     return 'update DB'
 
-
-@app.route("/", methods=['GET', 'POST'])
+@app.route("/", methods=['GET'])
 def index():
+    return render_template('chart.html' )
+
+@app.route("/", methods=['POST'])
+def draw_graph():
     str_start = str()
     str_end = str()
     dt_start = datetime.now()
     dt_end   = datetime.now()
     
-    if request.method == 'POST':
-        print( request.form['sens_node_select'])
-        sens_id = request.form['sens_node_select'].split('-')[1]
-        node_id = request.form['sens_node_select'].split('-')[2]
+    print( request.form['sens_node_select'])
+    sens_id = request.form['sens_node_select'].split('-')[1]
+    node_id = request.form['sens_node_select'].split('-')[2]
 
-        str_start = request.form['date_from']
-        str_end = request.form['date_to']
+    str_start = request.form['date_from']
+    str_end = request.form['date_to']
 
-        try:
-            dt_start = datetime.strptime(str_start, timepicker_format)
-            dt_end   = datetime.strptime(str_end,   timepicker_format)
-            if dt_start > dt_end:
-                dt_tmp = dt_start
-                dt_start = dt_end
-                dt_end = dt_tmp
-                
-        except ValueError:
-            dt_end = datetime.now() - timedelta(days=1)
-            dt_start = dt_end - timedelta(days=6)
-            str_start = datetime.strftime(dt_start, timepicker_format)
-            str_end   = datetime.strftime(dt_end, timepicker_format)
-    else:
+    try:
+        dt_start = datetime.strptime(str_start, timepicker_format)
+        dt_end   = datetime.strptime(str_end,   timepicker_format)
+        if dt_start > dt_end:
+            dt_tmp = dt_start
+            dt_start = dt_end
+            dt_end = dt_tmp
+            
+    except ValueError:
         dt_end = datetime.now() - timedelta(days=1)
         dt_start = dt_end - timedelta(days=6)
         str_start = datetime.strftime(dt_start, timepicker_format)
         str_end   = datetime.strftime(dt_end, timepicker_format)
-    
+
     print("表示範囲", str_start, '~', str_end)
     print("sens_id:{0} ,node_id:{1}".format(sens_id, node_id))
     daily_temp = get_daily_temp(sens_id, node_id, dt_start, dt_end)

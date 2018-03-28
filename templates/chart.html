@@ -35,7 +35,11 @@
         <form action="/" method="post" id="range-form"class="form-inline">
           場所 - センサーID - ノードID：
           <select name="sens_node_select" id="sens-node-select" class="form-control">
-            <option value=val>val</option>
+          </select>
+          描画データ：
+          <select name="env_select" id="env-select" class="form-control">
+            <option value="temperature">気温</option>
+            <option value="illuminance">日射量</option>
           </select>
 
           <div style="margin:10px">
@@ -99,11 +103,12 @@
       var current_cookies = $.cookie(cookieKey).split(",");
       for(var i=0;i<current_cookies.length;i++){
         var ids = current_cookies[i].split("-");
-        if(ids[1] == sens && ids[2] == node){
-          return false;
+        if(ids[0] == place || ids[1] == sens && ids[2] == node){
+          current_cookies.splice(i, 1);
+          break;
         }
       }
-      $.cookie(cookieKey, $.cookie(cookieKey) + place +"-"+ sens +"-"+ node +",");
+      $.cookie(cookieKey, current_cookies.join(",") + place +"-"+ sens +"-"+ node +",");
       console.log(`cookies :${$.cookie(cookieKey)}` );
       return true;
     }
