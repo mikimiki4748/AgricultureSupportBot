@@ -11,21 +11,19 @@ from datetime import datetime
 from datetime import timedelta
 from urllib.parse import urlencode
 from urllib.parse import quote
-
-from src.row_db import put_row_temp
  
-attr_list = ["nodeID","time","air_temperature",
-    "relative_humidity","illuminance","ATPR",
+
+attr_list = ["air_temperature","amount_of_solar_radiation",
+    "relative_humidity","ATPR",
     "soil_temperature","soil_moisture_content",
-    "amount_of_solar_radiation","wind_speed",
-    "wind_direction","rainfall","precipitation"]
+    "illuminance","wind_speed",
+    "wind_direction","rainfall","precipitation"]#"nodeID","time" もキーとしてある.
 
 api_format = '%Y-%m-%dT%H:%M:%S.000000Z'
-response_format = '%Y-%m-%d %H:%M:%S.%f'
-time_format = '%Y/%m/%d %H:%M:%S'
-date_format = '%Y/%m/%d'
+token_expire_format = '%Y-%m-%d %H:%M:%S.%f'
 
 token_response = {}
+
 
 def get_token():
     global token_response
@@ -46,18 +44,17 @@ def get_token():
 def is_token_valid(token_response):
     # KeyError にならないようにget()を使う.
     if token_response.get('Response') == 'Success' and \
-        datetime.strptime(token_response.get('Expire'), response_format) > datetime.now():
+        datetime.strptime(token_response.get('Expire'), token_expire_format) > datetime.now():
         return True
     return False
 
-def get_one_day(sensor_id, node_id, env_kind, dt_day):
+def download_day_data(sensor_id, node_id, dt_day, env_id):
     reference_token = get_token()
 
     url = 'http://www17337uj.sakura.ne.jp/v1/json/collection/item/'
     gw_name = 'sensorData_v2_'+sensor_id
     
-    #TODO: 気温以外の対応
-    keys = '[\"nodeID\",\"time\",\"air_temperature\"]'
+    keys = "[\"nodeID\",\"time\",\"{0}\"]".format(attr_list[env_id])
 
     start_time = dt_day.replace(hour=0,minute=0,second=0,microsecond=0)
     end_time = dt_day.replace(hour=23,minute=59,second=59,microsecond=999)
@@ -85,53 +82,8 @@ def get_one_day(sensor_id, node_id, env_kind, dt_day):
     if json_res['Response'] != 'Success':
         print('Failed download environmental data.')
         return False
+
     return json_res['List']
 
-def download_one_day_data(sensor_id, node_id, env_kind, dt_target):
-    env_list = get_one_day(sensor_id, node_id, env_kind, dt_target)
-    # print(env_list)
-    avg_temp = 0 
-    max_temp = -100
-    min_temp = 100
-    temp_num = 0
-    str_date = datetime.strftime(dt_target, date_format)#FIXME:api time, dt_target 違う場合.
-
-    daily_dict = dict()
-    for env in env_list:
-        env_dict = dict(env)
-        str_time = env_dict.get('time', None)
-        if(str_time is None):
-            continue
-        api_time = datetime.strptime(str_time, api_format) + timedelta(hours = 9)#9時間プラス
-        str_date = datetime.strftime(api_time, date_format)
-        
-        #TODO:other element
-        air_temperature = env_dict.get('air_temperature', None)
-        if air_temperature is None:
-            continue
-        put_row_temp(sensor_id, node_id, api_time, air_temperature)# DB save
-
-        temp_num += 1
-        avg_temp += air_temperature
-        if max_temp < air_temperature:
-            max_temp = air_temperature
-        if min_temp > air_temperature:
-            min_temp = air_temperature
-    else:
-        if avg_temp != 0 or temp_num != 0:
-            avg_temp = round(avg_temp / float(temp_num), 2)
-        if max_temp == -100 or min_temp == 100:
-            daily_dict = {"date":str_date, "valid": False, "avg_temp": None, "max_temp": None, "min_temp": None}          
-        else:
-            daily_dict = {"date":str_date, "valid": True, "avg_temp": avg_temp, "max_temp": max_temp, "min_temp": min_temp}
-        # print("download_one_day_data return -> :", daily_dict)
-    
-    return daily_dict
-
-
 if __name__ == '__main__' :
-    daily_data = get_daily_data(1)
-    for i in range(len(daily_data)):
-        print(daily_data[i])
-    #getToken()
-
+    pass#TODO

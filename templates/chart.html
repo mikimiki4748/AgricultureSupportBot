@@ -38,8 +38,8 @@
           </select>
           描画データ：
           <select name="env_select" id="env-select" class="form-control">
-            <option value="temperature">気温</option>
-            <option value="illuminance">日射量</option>
+            <option value="0">気温</option>
+            <option value="1">日射量</option>
           </select>
 
           <div style="margin:10px">
@@ -152,7 +152,7 @@
                 //結合点より外でマウスホバーを認識する範囲（ピクセル単位）
                 pointHitRadius: 15,
                 bezierCurve : false,
-                data : [{% for item in dataset_ave %}
+                data : [{% for item in dataset_avg %}
                         {{item}},
                         {% endfor %}],
             },{
