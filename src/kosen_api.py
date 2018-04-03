@@ -14,9 +14,9 @@ from urllib.parse import quote
  
 
 attr_list = ["air_temperature","amount_of_solar_radiation",
-    "relative_humidity","ATPR",
+    "illuminance","ATPR",
     "soil_temperature","soil_moisture_content",
-    "illuminance","wind_speed",
+    "relative_humidity","wind_speed",
     "wind_direction","rainfall","precipitation"]#"nodeID","time" もキーとしてある.
 
 api_format = '%Y-%m-%dT%H:%M:%S.000000Z'
@@ -75,15 +75,15 @@ def download_day_data(sensor_id, node_id, dt_day, env_id):
     headers ={
         'Authorization':reference_token,
     }
-
-    res = requests.get(url,params=payload,headers=headers)
+    res = requests.get(url,params=payload,headers=headers)# 1分くらいかかる.
     json_res = res.json()
 
     if json_res['Response'] != 'Success':
-        print('Failed download environmental data.')
         return False
-
     return json_res['List']
 
 if __name__ == '__main__' :
-    pass#TODO
+    # anan  = {'sensor': '45327972', 'nodes': ['7', '15']}
+    # ishii  = {'sensor': '45324459', 'nodes': ['7', '15']}
+    response = download_day_data('45324459', '7', datetime.now() - timedelta(days=3), 1)
+    print(response)

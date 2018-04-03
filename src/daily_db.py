@@ -3,6 +3,7 @@ import redis
 import time
 from datetime import datetime
 from datetime import timedelta
+
 from src.row_db import put_row_data
 from src.kosen_api import attr_list
 from src.kosen_api import api_format
@@ -52,21 +53,22 @@ def save_daily_temp(sensor_id, node_id, dt_target, env_id, env_list):
     max_temp = -100
     min_temp = 100
     temp_num = 0
-    str_date = datetime.strftime(dt_target, date_format)#FIXME:api time, dt_target 違う場合.
+    str_date = datetime.strftime(dt_target, date_format)
 
     daily_dict = dict()
     for env in env_list:
         env_dict = dict(env)
         str_time = env_dict.get('time', None)
-        if(str_time is None):
+        if(str_time is None):#ないときはないと思うが念のため.
             continue
-        api_time = datetime.strptime(str_time, api_format) + timedelta(hours = 9)#9時間プラス
-        str_date = datetime.strftime(api_time, date_format)
-        
         env_data = env_dict.get(attr_list[env_id], None)
-        if env_data is None:
+        if env_data is None:#ないときがある.
             continue
-        put_row_data(sensor_id, node_id, api_time, env_id, env_data)# DB save
+        #サーバの時刻はUTCのため+9h
+        dt_api = datetime.strptime(str_time, api_format) + timedelta(hours = 9)#9時間プラス
+        
+        #そのままのデータを保存
+        put_row_data(sensor_id, node_id, dt_api, env_id, env_data)# DB save
 
         temp_num += 1
         avg_temp += env_data
@@ -76,7 +78,7 @@ def save_daily_temp(sensor_id, node_id, dt_target, env_id, env_list):
             min_temp = env_data
     else:
         if avg_temp != 0 or temp_num != 0:
-            avg_temp = round(avg_temp / float(temp_num), 2)
+            avg_temp = round(avg_temp / float(temp_num), 2)#REVIEW:round()は偶数への丸めのため一般的な四捨五入ではない.
         if max_temp == -100 or min_temp == 100:
             daily_dict = {"date":str_date, "valid": False, "avg_temp": None, "max_temp": None, "min_temp": None}          
         else:
@@ -90,54 +92,59 @@ def save_daily_temp(sensor_id, node_id, dt_target, env_id, env_list):
 
 def save_daily_illum(sensor_id, node_id, dt_target, env_id, env_list):
     '''
-    気温以外は1日あたりの日射量が表示されればありがたい。
-    日射量ｘΔｔ（単位時間）の積分をkwhでグラフ化
+    1日あたりの日射量を積算し保存.
+    日射量ｘΔｔ(s)（単位時間）の積分を計算し[kwh]で保存
     750w/m2が10分単位で取得されている場合
     0.75×10/60を1日分積算していって求めてください。
+    #  {'time': '2018-04-01T03:41:34.000000Z', '_id': '5ac054f1cb54b4001062c45f', 'nodeID': 7.0, 'amount_of_solar_radiation': 709.0},
+    #  {'time': '2018-04-01T03:41:59.000000Z', '_id': '5ac0550acb54b4001062c46f', 'nodeID': 7.0, 'amount_of_solar_radiation': 709.0}]
     '''
     accumu_illum = 0
-    avg_temp = 0 
-    max_temp = -100
-    min_temp = 100
-    temp_num = 0
+    pre_illum = 0
+    dt_past = None #datetime
+
     str_date = datetime.strftime(dt_target, date_format)#FIXME:api time, dt_target 違う場合.
 
     daily_dict = dict()
     for env in env_list:
         env_dict = dict(env)
         str_time = env_dict.get('time', None)
-        if(str_time is None):
+        if(str_time is None):#ないときはないと思うが念のため.
             continue
-        print(env_dict)
-        continue
-        api_time = datetime.strptime(str_time, api_format) + timedelta(hours = 9)#9時間プラス
-        str_date = datetime.strftime(api_time, date_format)
-        
         env_data = env_dict.get(attr_list[env_id], None)
-        if env_data is None:
+        if env_data is None:#ないときがある.
             continue
-        put_row_data(sensor_id, node_id, api_time, env_id, env_data)# DB save
+        #サーバの時刻はUTCのため+9h
+        dt_api = datetime.strptime(str_time, api_format) + timedelta(hours = 9)#9時間プラス
+        
+        #そのままのデータを保存
+        put_row_data(sensor_id, node_id, dt_api, env_id, env_data)# DB save
 
-        temp_num += 1
-        avg_temp += env_data
-        if max_temp < env_data:
-            max_temp = env_data
-        if min_temp > env_data:
-            min_temp = env_data
-    else:
-        if avg_temp != 0 or temp_num != 0:
-            avg_temp = round(avg_temp / float(temp_num), 2)
-        if max_temp == -100 or min_temp == 100:
-            daily_dict = {"date":str_date, "valid": False, "avg_temp": None, "max_temp": None, "min_temp": None}          
+
+        if dt_past is None:
+            dt_past = dt_api
+            pre_illum = env_data
+            continue
         else:
-            daily_dict = {"date":str_date, "valid": True, "avg_temp": avg_temp, "max_temp": max_temp, "min_temp": min_temp}
+            #accumu_illum[kWs] += 発電量[w] / 1000 * 経過時間[s]
+            accumu_illum += float(env_data) / 1000 * (dt_api - dt_past).total_seconds()
+            dt_past = dt_api
+            pre_illum = env_data
+        print(dt_api.strftime(api_format), '\taccumu_illum:', accumu_illum)
+    else:
+        if accumu_illum == 0:
+            #"valid": False はセンサ値が一日分有効でないことを示す.
+            daily_dict = {"date":dt_target.strftime(db_date_format), "valid": False, "accumu_illum": None}          
+        else:
+            #accumu_illum[kWs] -> [kWh]
+            accumu_illum = round(accumu_illum / 3600, 2)#REVIEW:round()は偶数への丸めのため一般的な四捨五入ではない.
+            daily_dict = {"date":dt_target.strftime(db_date_format), "valid": True, "accumu_illum": accumu_illum}
         # print("download_one_day_data return -> :", daily_dict)
 
     print("save_daily_illum().daily_dict", daily_dict)
     put_data(sensor_id, node_id, dt_target, env_id, daily_dict)
 
     return daily_dict
-
 
 if __name__ == '__main__' :
     del_db()

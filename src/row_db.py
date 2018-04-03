@@ -3,6 +3,7 @@ import redis
 import time
 from datetime import datetime
 from datetime import timedelta
+
 from src.kosen_api import api_format
 
 REDIS_URL = os.environ.get('REDIS_URL') if os.environ.get(

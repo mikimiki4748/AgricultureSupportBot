@@ -82,12 +82,12 @@ def draw_graph():
 
         # for row in daily_temp:
         #     print("contents: ", row)
-        asc_date = [row[b'date'].decode('utf-8') for row in daily_temp if row[b'valid'] == b"True"]
-        asc_avg = [float(row[b'avg_temp']) for row in daily_temp if row[b'valid'] == b"True"]
-        asc_max = [float(row[b'max_temp']) for row in daily_temp if row[b'valid'] == b"True"]
-        asc_min = [float(row[b'min_temp']) for row in daily_temp if row[b'valid'] == b"True"]
+        asc_date = [item[b'date'].decode('utf-8') for item in daily_temp if item[b'valid'] == b"True"]
+        asc_avg = [float(item[b'avg_temp']) for item in daily_temp if item[b'valid'] == b"True"]
+        asc_max = [float(item[b'max_temp']) for item in daily_temp if item[b'valid'] == b"True"]
+        asc_min = [float(item[b'min_temp']) for item in daily_temp if item[b'valid'] == b"True"]
 
-        return render_template('chart.html', dataset_avg=asc_avg,
+        return render_template('chart.html', env_id=env_id, dataset_avg=asc_avg,
             dataset_max=asc_max, dataset_min=asc_min, labels=asc_date,
             str_start=str_start, str_end=str_end,
             sens_id = sens_id, node_id = node_id )
@@ -97,10 +97,10 @@ def draw_graph():
 
         # for row in daily_temp:
         #     print("contents: ", row)
-        asc_date = [row[b'date'].decode('utf-8') for row in daily_illum if row[b'valid'] == b"True"]
-        asc_illum = [float(row[b'avg_illum']) for row in daily_illum if row[b'valid'] == b"True"]
+        asc_date = [item[b'date'].decode('utf-8') for item in daily_illum if item[b'valid'] == b"True"]
+        asc_illum = [float(item[b'accumu_illum']) for item in daily_illum if item[b'valid'] == b"True"]
 
-        return render_template('chart.html',
+        return render_template('chart.html',env_id=env_id,
             labels = asc_date, dataset_avg = asc_illum,
             str_start = str_start, str_end = str_end)
 

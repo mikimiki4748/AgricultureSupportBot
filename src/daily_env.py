@@ -56,3 +56,10 @@ def update_one_year(sensor_id, node_id):
         dt_target += timedelta(days=1)
 
     return True
+
+if __name__ == '__main__' :
+    # anan  = {'sensor': '45327972', 'nodes': ['7', '15']}
+    # ishii  = {'sensor': '45324459', 'nodes': ['7', '15']}
+    now = datetime.now()
+    response = get_daily_data('45324459', '7', now - timedelta(days=4),now - timedelta(days=3), 1)
+    print(response)
