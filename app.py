@@ -44,7 +44,11 @@ def db_update():
 
 @app.route("/", methods=['GET'])
 def index():
-    return render_template('chart.html' )
+    dt_start = datetime.now() - timedelta(days=6)
+    dt_end   = datetime.now()
+    return render_template('chart.html',
+        str_start=dt_start.strftime(timepicker_format),
+        str_end=dt_end.strftime(timepicker_format))
 
 @app.route("/", methods=['POST'])
 def draw_graph():
@@ -59,7 +63,8 @@ def draw_graph():
 
     str_start = request.form['date_from']
     str_end = request.form['date_to']
-    env_id = int(request.form['env_select'])
+    
+    env_id = float(request.form['env_select'])
     try:
         dt_start = datetime.strptime(str_start, timepicker_format)
         dt_end   = datetime.strptime(str_end,   timepicker_format)
@@ -77,7 +82,7 @@ def draw_graph():
     print("表示範囲", str_start, '~', str_end)
     print("sens_id:{0} ,node_id:{1}".format(sens_id, node_id))
     
-    if env_id == 0:#FIXME:enum
+    if env_id == 0:#FIXME:env_id をenumなどで定義
         daily_temp = get_daily_data(sens_id, node_id, dt_start, dt_end, env_id)
 
         # for row in daily_temp:
@@ -92,16 +97,21 @@ def draw_graph():
             str_start=str_start, str_end=str_end,
             sens_id = sens_id, node_id = node_id )
 
-    elif env_id == 1:
+    elif env_id >= 1 or env_id < 2:
         daily_illum = get_daily_data(sens_id, node_id, dt_start, dt_end, env_id)
-
-        # for row in daily_temp:
-        #     print("contents: ", row)
         asc_date = [item[b'date'].decode('utf-8') for item in daily_illum if item[b'valid'] == b"True"]
         asc_illum = [float(item[b'accumu_illum']) for item in daily_illum if item[b'valid'] == b"True"]
+        
+        if env_id == 1.1:
+            #REVIEW: 描画する範囲で積算する.
+            #今後実装で播種からの積算にすべき?
+            for (i,illum) in enumerate(asc_illum):
+                if i == 0:
+                    continue
+                asc_illum[i] += asc_illum[i-1]
 
-        return render_template('chart.html',env_id=env_id,
-            labels = asc_date, dataset_avg = asc_illum,
+        return render_template('chart.html',env_id=int(env_id),
+            labels = asc_date, dataset_illum = asc_illum,
             str_start = str_start, str_end = str_end)
 
     return render_template('chart.html' )

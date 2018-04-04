@@ -12,6 +12,7 @@ def get_daily_data(sensor_id, node_id, dt_bgn, dt_end, env_id):
     TODO:今日のデータは別の関数で取得するようにする(グラフでなく文字表示する用)'''
     debug_format = '%Y-%m-%d'
     daily_temps = []
+    env_id = int(env_id)
     
     dt_yday = datetime.now().replace(hour=23,minute=59,second=59,microsecond=999) - timedelta(days=1)
     if dt_end > dt_yday:
