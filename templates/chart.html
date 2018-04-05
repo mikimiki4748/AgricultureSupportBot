@@ -39,6 +39,7 @@
           描画データ：
           <select name="env_select" id="env-select" class="form-control">
             <option value="0">気温</option>
+            <option value="0.5">気温(積算)</option>
             <option value="1">日射量</option>
             <option value="1.1">日射量(積算)</option>
           </select>
@@ -188,6 +189,41 @@
             pointHitRadius: 15,
             bezierCurve : false,
             data : [{% for item in dataset_min %}
+                    {{item}},
+                    {% endfor %}],
+          }
+        ]
+      }
+      {% elif env_id == 0.5 %}
+      barData = {
+        labels : [{% for item in labels %}
+          "{{item}}", {% endfor %}],
+        datasets : [
+          {
+            //凡例
+            label: "平均気温の積算",
+            //面の表示
+            fill: false,
+            //線のカーブ
+            lineTension: 0,
+            //枠線の色
+            borderColor: "rgba(255, 255, 0, 1)",
+            //結合点の枠線の色
+            pointBorderColor: "rgba(255, 255, 0, 1)",
+            //結合点の背景色
+            pointBackgroundColor: "rgba(255, 255, 0, 1)",
+            //結合点のサイズ
+            pointRadius: 5,
+            //結合点のサイズ（ホバーしたとき）
+            pointHoverRadius: 8,
+            //結合点の背景色（ホバーしたとき）
+            pointHoverBackgroundColor: "rgba(200, 200, 0, 1)",
+            //結合点の枠線の色（ホバーしたとき）
+            pointHoverBorderColor: "rgba(200, 200, 0, 1)",
+            //結合点より外でマウスホバーを認識する範囲（ピクセル単位）
+            pointHitRadius: 15,
+            bezierCurve : false,
+            data : [{% for item in dataset_avg %}
                     {{item}},
                     {% endfor %}],
           }

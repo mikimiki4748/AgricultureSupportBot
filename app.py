@@ -82,16 +82,23 @@ def draw_graph():
     print("表示範囲", str_start, '~', str_end)
     print("sens_id:{0} ,node_id:{1}".format(sens_id, node_id))
     
-    if env_id == 0:#FIXME:env_id をenumなどで定義
-        daily_temp = get_daily_data(sens_id, node_id, dt_start, dt_end, env_id)
+    if env_id >= 0 or env_id < 1:#FIXME:env_id をenumなどで定義
+        daily_temp = get_daily_data(sens_id, node_id, dt_start, dt_end, int(env_id))
 
-        # for row in daily_temp:
-        #     print("contents: ", row)
         asc_date = [item[b'date'].decode('utf-8') for item in daily_temp if item[b'valid'] == b"True"]
         asc_avg = [float(item[b'avg_temp']) for item in daily_temp if item[b'valid'] == b"True"]
         asc_max = [float(item[b'max_temp']) for item in daily_temp if item[b'valid'] == b"True"]
         asc_min = [float(item[b'min_temp']) for item in daily_temp if item[b'valid'] == b"True"]
-
+        if env_id == 0.5:
+            for (i,avg) in enumerate(asc_avg):
+                if i == 0:
+                    continue
+                asc_avg[i] += asc_avg[i-1]
+                asc_max[i] += asc_max[i-1]
+                asc_min[i] += asc_min[i-1]
+                asc_avg[i] = round(asc_avg[i], 2)
+                asc_max[i] = round(asc_max[i], 2)
+                asc_min[i] = round(asc_min[i], 2)
         return render_template('chart.html', env_id=env_id, dataset_avg=asc_avg,
             dataset_max=asc_max, dataset_min=asc_min, labels=asc_date,
             str_start=str_start, str_end=str_end,
@@ -110,7 +117,7 @@ def draw_graph():
                     continue
                 asc_illum[i] += asc_illum[i-1]
 
-        return render_template('chart.html',env_id=int(env_id),
+        return render_template('chart.html',env_id=int(env_id),#1<=env_id<2で表示形式が同じならintキャストする
             labels = asc_date, dataset_illum = asc_illum,
             str_start = str_start, str_end = str_end)
 
