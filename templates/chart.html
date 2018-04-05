@@ -98,7 +98,7 @@
       if(!sens || !node)
         return false
       if(current_cookie == null){
-        $.cookie(cookieKey, place +"-"+ sens +"-"+ node +",");
+        $.cookie(cookieKey, place +"-"+ sens +"-"+ node +",", {expires: 36500});//expiresの値に特に意味はない
         return true;
       }
       var current_cookies = $.cookie(cookieKey).split(",");
